@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import threading
 import logging
 import random
 import time
@@ -22,15 +23,17 @@ class RGBLeds:
         self.driver = pca9685.PCA9685(subaddress = 0, bus = I2CBUS)
         self.driver.setPrescaler(13)
         self.reset()
+        self.lock = threading.Lock()
     
     def setLED(self, index, red = 0, green = 0, blue = 0):
         assert index >= 0 and index < 3
         assert red >= 0.0 and red <= 1.0
         assert green >= 0.0 and green <= 1.0
         assert blue >= 0.0 and blue <= 1.0
-        self.driver.setLED(self.LED_PINS[index][0], red)
-        self.driver.setLED(self.LED_PINS[index][1], green, delay = 0)
-        self.driver.setLED(self.LED_PINS[index][2], blue, delay = 0)
+        with self.lock:
+            self.driver.setLED(self.LED_PINS[index][0], red)
+            self.driver.setLED(self.LED_PINS[index][1], green, delay = 0)
+            self.driver.setLED(self.LED_PINS[index][2], blue, delay = 0)
         
     def reset(self):
         self.driver.setAllLED(0)
@@ -39,6 +42,7 @@ class Valves:
     GATE_PINS = (17, 27, 22)
     
     def __init__(self):
+        self.lock = threading.Lock()
         for gpio in self.GATE_PINS:
             GPIO.setup(gpio, GPIO.OUT, initial=GPIO.LOW)
         self.reset()
@@ -51,18 +55,19 @@ class Valves:
         self.setValve(index, False)
 
     def setValve(self, index, value):
-        assert index >= 1 and index <= 3
-        assert value == True or value == False
-        if value: state = GPIO.HIGH
-        else: state = GPIO.LOW
+        with self.lock:
+            assert index >= 0 and index <= 2
+            assert value == True or value == False
+            if value: state = GPIO.HIGH
+            else: state = GPIO.LOW
 
-        GPIO.output(self.GATE_PINS[index - 1], state)
-        return
-        
+            GPIO.output(self.GATE_PINS[index], state)
+            return
+            
     def reset(self):
+        self.disable(0)
         self.disable(1)
         self.disable(2)
-        self.disable(3)
         return
 
 class Sensors:
@@ -85,14 +90,17 @@ class Controls:
 
     def __init__(self, subaddress = ADC_SUBADDR):
         self.driver = pcf8591.PCF8591(bus = I2CBUS)
+        self.lock = threading.Lock()
+        self.read()
         return
         
     def read(self):
-        data = self.driver.readChannels()
-        if len(data) != 4:
-            return None
-        return [data[self.CHANNELS[0]] / 255.0, data[self.CHANNELS[1]] / 255.0, 
-                data[self.CHANNELS[2]] / 255.0, data[self.CHANNELS[3]] / 255.0]
+        with self.lock:
+            data = self.driver.readChannels()
+            if len(data) != 4:
+                return None
+            return [data[self.CHANNELS[0]] / 255.0, data[self.CHANNELS[1]] / 255.0, 
+                    data[self.CHANNELS[2]] / 255.0, data[self.CHANNELS[3]] / 255.0]
 
 class Status:
     LED_GPIO = (7, 6, 5, 4, 3, 2, 1, 0)
