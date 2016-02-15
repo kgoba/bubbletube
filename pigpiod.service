@@ -4,6 +4,7 @@ Description=PiGPIO Daemon Service
 [Service]
 ExecStart=/usr/local/bin/pigpiod
 Type=forking
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

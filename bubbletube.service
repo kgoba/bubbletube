@@ -4,8 +4,8 @@ Requires=pigpiod.service
 
 [Service]
 ExecStart=/home/pi/bubbletube/main.py
-StandardOutput=null
-  
+Restart=on-failure
+
 [Install]
 WantedBy=multi-user.target
 
