@@ -31,7 +31,7 @@ def rgbTask(rgb, index, events):
         idx = random.randint(0, 2)
         dir = random.randint(0, 1) * 2 - 1
         num = random.randint(100, 300)
-        logging.debug("LED %d.%s %d %.2f %.2f %.2f" % (index, names[idx], dir, color[0], color[1], color[2]))
+        #logging.debug("LED %d.%s %d %.2f %.2f %.2f" % (index, names[idx], dir, color[0], color[1], color[2]))
         for c in range(num):
             r = color[0]
             g = color[1]
@@ -133,7 +133,7 @@ def main(argv):
     tasks = []
     tasks.append( threading.Thread(target = blinkTask, args = (status, )) )
     for (t_idx, v_idx, c_idx, delay) in seq:
-        tasks.append( threading.Thread(target = valveSimpleTask, args = (valves, timer, status, v_idx - 1, c_idx, touchEvents[t_idx - 1], delay)) )
+        tasks.append( threading.Thread(target = valveSimpleTask, args = (valves, timer, status, v_idx - 1, c_idx - 1, touchEvents[t_idx - 1], delay)) )
          
     for i in range(3):
         events = [touchEvents[i], touchEvents[3], touchEvents[4], touchEvents[5]]
