@@ -118,6 +118,12 @@ class Status:
         self.setAll(self.state)
         return
 
+    def setValue(self, index, value):
+        if value:
+            self.set(index)
+        else:
+            self.clear(index)
+
 def init():
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)

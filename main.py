@@ -16,7 +16,11 @@ from hal import Status
 LOGFILE = None
 LOGLEVEL = logging.INFO
 
-def rgbTask(rgb):
+RGB_IDLE_MIN = 0.01
+RGB_IDLE_MAX = 0.12
+RGB_TOUCH    = 0.30
+
+def rgbTask(rgb, touchEvents):
     names = ["R", "G", "B"]
     color = [0.1, 0.3, 0.2]
     while True:
@@ -25,17 +29,61 @@ def rgbTask(rgb):
         num = random.randint(100, 250)
         #logging.info("Channel %s %d %.2f %.2f %.2f" % (names[idx], dir, color[0], color[1], color[2]))
         for c in range(num):
-            color[idx] += 0.002 * dir
-            if color[idx] > 0.5:
-                color[idx] = 0.5
+            color[idx] += 0.001 * dir
+            if color[idx] > RGB_IDLE_MAX:
+                color[idx] = RGB_IDLE_MAX
                 break
-            if color[idx] < 0.0:
-                color[idx] = 0.0
+            if color[idx] < RGB_IDLE_MIN:
+                color[idx] = RGB_IDLE_MIN
                 break
-            rgb.setLED(0, color[0], color[1], color[2])
-            rgb.setLED(1, color[0], color[1], color[2])
-            rgb.setLED(2, color[0], color[1], color[2])
+            r = color[0]
+            g = color[1]
+            b = color[2]
+            if touchEvents[0].isSet():
+                rgb.setLED(0, r + RGB_TOUCH, g + RGB_TOUCH, b + RGB_TOUCH)
+            else:
+                rgb.setLED(0, r, g, b)
+            if touchEvents[1].isSet():
+                rgb.setLED(1, r + RGB_TOUCH, g + RGB_TOUCH, b + RGB_TOUCH)
+            else:
+                rgb.setLED(1, r, g, b)
+            if touchEvents[2].isSet():
+                rgb.setLED(2, r + RGB_TOUCH, g + RGB_TOUCH, b + RGB_TOUCH)
+            else:
+                rgb.setLED(2, r, g, b)
+            
             time.sleep(0.02)
+    return
+
+def valveTask(valves, status, touchEvents):
+    while True:
+        v1 = touchEvents[0].isSet()
+        v2 = touchEvents[1].isSet()
+        v3 = touchEvents[2].isSet()
+         
+        status.setValue(1, v1)
+        status.setValue(2, v2)
+        status.setValue(3, v3)
+        valves.setValve(1, v1)
+        valves.setValve(2, v2)
+        valves.setValve(3, v3)
+        time.sleep(0.1)
+    return
+
+def sensorTask(sensors, touchEvents):
+    while True:
+        states = sensors.read()
+        any = False
+        for i in range(6):
+            if states[i]:
+                touchEvents[i].set()
+                any = True
+        if any:
+            time.sleep(1)
+        else:
+            for i in range(6):
+                touchEvents[i].clear()
+            time.sleep(0.1)
     return
 
 def main(argv):
@@ -51,19 +99,19 @@ def main(argv):
 
     logging.info("Devices initialized")
     
-    t1 = threading.Thread(target = rgbTask, args = (rgb,))
+    touchEvents = [threading.Event() for i in range(6)]
+    t1 = threading.Thread(target = rgbTask, args = (rgb, touchEvents))
+    t2 = threading.Thread(target = sensorTask, args = (sensors, touchEvents))
+    t3 = threading.Thread(target = valveTask, args = (valves, status, touchEvents))
     logging.info("Threads initialized")
 
     status.set(0)
     t1.start()
+    t2.start()
+    t3.start()
     while True:
-        states = sensors.read()
-        for i in range(6):
-            if states[i]:
-                status.set(i + 1)
-            else:
-                status.clear(i + 1)
-        time.sleep(0.2)
+        time.sleep(1)
+        pass
     return
     
 if __name__ == "__main__":
