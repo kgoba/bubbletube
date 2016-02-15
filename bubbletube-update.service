@@ -1,0 +1,10 @@
+[Unit]
+Description=BubbleTube Update Service
+
+[Service]
+ExecStart=/home/pi/bubbletube/update-git
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
+

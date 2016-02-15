@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "Remounting / as read-write"
+sudo mount -o remount,rw /
+
+echo "Pulling new version"
+git pull >>update.log
+
+echo "Remounting / as read-only"
+sudo mount -o remount,ro /
+
+echo "Restarting service"
+sudo systemctl restart bubbletube
+
