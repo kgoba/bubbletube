@@ -1,0 +1,15 @@
+#!/bin/sh
+# Filename:     /etc/dhcp/dhclient-exit-hooks.d/hostname
+# Purpose:      Used by dhclient-script to set the hostname of the system
+#               to match the DNS information for the host as provided by
+#               DHCP.
+#
+
+if [ "$reason" != BOUND ] && [ "$reason" != RENEW ] \
+   && [ "$reason" != REBIND ] && [ "$reason" != REBOOT ]
+then
+        return
+fi
+
+sudo -u pi /home/pi/bubbletube/update-git
+
