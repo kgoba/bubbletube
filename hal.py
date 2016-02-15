@@ -91,8 +91,8 @@ class Controls:
         data = self.driver.readChannels()
         if len(data) != 4:
             return None
-        return [data[self.CHANNELS[0]], data[self.CHANNELS[1]], 
-                data[self.CHANNELS[2]], data[self.CHANNELS[3]]]
+        return [data[self.CHANNELS[0]] / 255.0, data[self.CHANNELS[1]] / 255.0, 
+                data[self.CHANNELS[2]] / 255.0, data[self.CHANNELS[3]] / 255.0]
 
 class Status:
     LED_GPIO = (7, 6, 5, 4, 3, 2, 1, 0)
