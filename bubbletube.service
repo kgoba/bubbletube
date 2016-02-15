@@ -1,0 +1,11 @@
+[Unit]
+Description=BubbleTube Service
+Requires=pigpiod.service
+
+[Service]
+ExecStart=/home/pi/bubbletube/main.py
+StandardOutput=null
+  
+[Install]
+WantedBy=multi-user.target
+
