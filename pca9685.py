@@ -44,7 +44,7 @@ class PCA9685:
         else:
             cmd = self.REG_ALL_LED_ON_L
         #self.setMode1(ai = True, sleep = True)
-        logging.debug("Setting ON=%d OFF=%d (idx %s reg %d) %s" % (on, off, str(index), cmd, str(data)))    
+        #logging.debug("Setting ON=%d OFF=%d (idx %s reg %d) %s" % (on, off, str(index), cmd, str(data)))    
         self.bus.write_i2c_block_data(self.addr0, cmd, data)
         #self.setMode1(ai = True, sleep = False)
         return
