@@ -1,10 +1,15 @@
 #!/bin/bash
 
+cd "${0%/*}"
+
 echo "Remounting / as read-write"
 sudo mount -o remount,rw /
 
 echo "Pulling new version"
-git pull >>update.log
+sudo -u pi git pull
+
+echo "Running install script"
+bash ./install.sh
 
 echo "Remounting / as read-only"
 sudo mount -o remount,ro /
